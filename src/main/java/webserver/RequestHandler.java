@@ -75,6 +75,7 @@ public class RequestHandler extends Thread {
     }
     
     // 요구사항 3
+    
     private void returnView(OutputStream out) throws IOException {
     	
     	String url = "/index.html";
