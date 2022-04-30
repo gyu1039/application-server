@@ -32,20 +32,12 @@ public class RequestHandler extends Thread {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
         	
             BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf8"));
-           
-            // 요구사항 1
-             printHTTPRequest(br);
-            
-            // 요구사항 2
-            
             String inputLine;
-            
         	while((inputLine = br.readLine()) != null) {
         		
         		if(isRequestURL(br)) {
         			returnView(out); return;
         		}
-        		
         		if(inputLine.equals("")) break;
         	}
         	
@@ -58,6 +50,7 @@ public class RequestHandler extends Thread {
         }
     }
     
+    // 요구사항 1
     private void printHTTPRequest(BufferedReader br) {
     	
     	String line;
@@ -71,6 +64,7 @@ public class RequestHandler extends Thread {
     	return;
     }
     
+    // 요구사항 2
     private boolean isRequestURL(BufferedReader br){
     	
     	List<String> firstLine = new ArrayList<>(List.of(getStringFromBR(br).split(" ")));
@@ -80,6 +74,7 @@ public class RequestHandler extends Thread {
     	
     }
     
+    // 요구사항 3
     private void returnView(OutputStream out) throws IOException {
     	
     	String url = "/index.html";
@@ -92,7 +87,7 @@ public class RequestHandler extends Thread {
     private String getStringFromBR(BufferedReader br){
     	
     	try {
-			return br.readLine();
+    		return br.readLine();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
