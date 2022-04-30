@@ -9,11 +9,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import util.HttpRequestUtils;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -28,80 +28,98 @@ public class RequestHandler extends Thread {
         log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(),
                 connection.getPort());
 
-        try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
+        try (InputStream in = connection.getInputStream(); 
+        		OutputStream out = connection.getOutputStream()) {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
         	
-            BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf8"));
-            String inputLine;
-        	while((inputLine = br.readLine()) != null) {
-        		
-        		if(isRequestURL(br)) {
-        			returnView(out); return;
-        		}
-        		if(inputLine.equals("")) break;
+        	BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf8"));
+        	DataOutputStream dos = new DataOutputStream(out);
+      
+        	br.mark(262144);
+        	printRequestHeader(br);
+        	br.reset();
+        	
+        	// Extracting URL 
+        	String line = br.readLine();
+        	String url = HttpRequestUtils.getUrl(line);
+        	
+        	if(url.equals("/index.html")) {
+        		returnView(out, url, dos);
+        		return ;
         	}
         	
-        	DataOutputStream dos = new DataOutputStream(out);
             byte[] body = "Hello World".getBytes();
             response200Header(dos, body.length);
             responseBody(dos, body);
+            
         } catch (IOException e) {
             log.error(e.getMessage());
+            
         }
     }
     
-    // 요구사항 1
-    private void printHTTPRequest(BufferedReader br) {
+    // 직접 구현해본 요구사항 1
+    private void printRequestHeader(BufferedReader br){
     	
     	String line;
-    	List<String> tokens = new ArrayList<>();
-    	while((line = getStringFromBR(br)) != null) {
-    		if(line.equals("")) break;
-    		tokens.add(line);
-    	}
-    	
-    	System.out.println(tokens.toString());
-    	return;
-    }
-    
-    // 요구사항 2
-    private boolean isRequestURL(BufferedReader br){
-    	
-    	List<String> firstLine = new ArrayList<>(List.of(getStringFromBR(br).split(" ")));
-    	if(firstLine.contains("/index.html")) {
-    		return true;
-    	} else return false;
-    	
-    }
-    
-    // 요구사항 3
-    
-    private void returnView(OutputStream out) throws IOException {
-    	
-    	String url = "/index.html";
-		byte[] body2 = Files.readAllBytes(new File("./webapp" + url).toPath());
-		DataOutputStream dos = new DataOutputStream(out);
-		response200Header(dos, body2.length);
-		responseBody(dos, body2);
-    }
-
-    private String getStringFromBR(BufferedReader br){
-    	
     	try {
-    		return br.readLine();
+			while((line = br.readLine()) != null) {
+				if(line.equals("") || line == null) break;
+				log.debug("Request Header = {}", line);
+				
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			
 		}
-		return null;
+    	
+    	return;
     }
+    
+    // 직접 구현해본 요구사항 2
+	
+    private boolean isRequestURL(BufferedReader br){
+
+    	String firstLine;
+		try {
+			firstLine = (br.readLine().split(" "))[1];
+			if(firstLine.equals("/index.html")) return true;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return false;
+
+    }
+
+    
+    // 직접 구현해본 요구사항 3
+    private void returnView(OutputStream out, String url, DataOutputStream dos) throws IOException {
+    	
+		byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
+		response200Header(dos, body.length);
+		responseBody(dos, body);
+    }
+
+    
+    private void Requirement_1(BufferedReader br) throws IOException {
+    	
+    	String line = br.readLine();
+    	if(line == null) return;
+    	
+    	while(!"".equals(line)) {
+    		log.debug("header : {} ", line);
+    		line = br.readLine();
+    	}
+    	
+    }
+    
+    
     
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Content-Type: text/html;charset=	utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
