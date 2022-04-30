@@ -15,8 +15,8 @@
 * 각 요구사항을 구현하는 것이 중요한 것이 아니라 구현 과정을 통해 학습한 내용을 인식하는 것이 배움에 중요하다. 
 
 ### 요구사항 1 - http://localhost:8080/index.html로 접속시 응답
-* 
-
+* BufferedReader로 InputStream객체를 라인별로 읽어 들이고 요청 헤더를 모두 출력하면 스트림의 끝으로 이동하여, 같은 BufferedReader 객체로 첫 번째 줄의 url를 추출할 수 없다.
+* BufferedReader의 mark(readAheadLimit)와 reset()으로 해당 마크지점으로 되돌아 갈 수 있다.
 ### 요구사항 2 - get 방식으로 회원가입
 * 
 
