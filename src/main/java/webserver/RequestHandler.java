@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -31,18 +32,18 @@ public class RequestHandler extends Thread {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
         	
             BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf8"));
+           
+            // 요구사항 1
+             printHTTPRequest(br);
+            
+            // 요구사항 2
+            
             String inputLine;
-            List<String> tokens;
             
         	while((inputLine = br.readLine()) != null) {
-        		log.debug(inputLine);
-        		tokens = List.of(inputLine.split(" "));
-        		if(tokens.contains("/index.html")) {
-        			String url = "/index.html";
-        			byte[] body2 = Files.readAllBytes(new File("./webapp" + url).toPath());
-        			DataOutputStream dos = new DataOutputStream(out);
-        			response200Header(dos, body2.length);
-        			responseBody(dos, body2);
+        		
+        		if(isRequestURL(br)) {
+        			returnView(out); return;
         		}
         		
         		if(inputLine.equals("")) break;
@@ -56,7 +57,51 @@ public class RequestHandler extends Thread {
             log.error(e.getMessage());
         }
     }
+    
+    private void printHTTPRequest(BufferedReader br) {
+    	
+    	String line;
+    	List<String> tokens = new ArrayList<>();
+    	while((line = getStringFromBR(br)) != null) {
+    		if(line.equals("")) break;
+    		tokens.add(line);
+    	}
+    	
+    	System.out.println(tokens.toString());
+    	return;
+    }
+    
+    private boolean isRequestURL(BufferedReader br){
+    	
+    	List<String> firstLine = new ArrayList<>(List.of(getStringFromBR(br).split(" ")));
+    	if(firstLine.contains("/index.html")) {
+    		return true;
+    	} else return false;
+    	
+    }
+    
+    private void returnView(OutputStream out) throws IOException {
+    	
+    	String url = "/index.html";
+		byte[] body2 = Files.readAllBytes(new File("./webapp" + url).toPath());
+		DataOutputStream dos = new DataOutputStream(out);
+		response200Header(dos, body2.length);
+		responseBody(dos, body2);
+    }
 
+    private String getStringFromBR(BufferedReader br){
+    	
+    	try {
+			return br.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			
+		}
+		return null;
+    }
+    
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
