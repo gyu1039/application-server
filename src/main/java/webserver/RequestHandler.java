@@ -43,13 +43,11 @@ public class RequestHandler extends Thread {
         	
         	// Extracting URL 
         	String line = br.readLine();
-        	String url = HttpRequestUtils.getRequestPath(line);
+        	log.debug("line : {}", line);
+        	String url = HttpRequestUtils.getUrl(line);
         	
-        	if(url.endsWith("html")) {
-        		viewPage(url, dos);
-        		return;
-        	}
-        	
+  
+        		
         	if(url.contains("/user/create")) {
         		String params = HttpRequestUtils.getParam(line);
         		Map<String, String> data = HttpRequestUtils.parseQueryString(params);
@@ -58,13 +56,11 @@ public class RequestHandler extends Thread {
         				data.get("name"),
         				data.get("email"));
         		
-        		log.debug("userId = {}, password = {}, name = {}, email = {}",
-        				user1.getUserId(), user1.getPassword(), user1.getName(), user1.getEmail());
-        		
-        		return;
+        		log.debug("User : {} ", user1);
+        		url = "/index.html";
         	}
         	
-    		showHelloWorld(dos);
+    		viewPage(url, dos);
         	
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -75,7 +71,9 @@ public class RequestHandler extends Thread {
     // 직접 구현해본 요구사항 3
     private void viewPage(String url, DataOutputStream dos) throws IOException {
     	
-		byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
+    	byte[] body;
+    	if(url.equals("/")) body = Files.readAllBytes(new File("./webapp/index.html").toPath());  
+    	else body = Files.readAllBytes(new File("./webapp" + url).toPath());
 		response200Header(dos, body.length);
 		responseBody(dos, body);
     }
