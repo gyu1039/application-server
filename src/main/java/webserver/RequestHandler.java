@@ -77,14 +77,7 @@ public class RequestHandler extends Thread {
 		response200Header(dos, body.length);
 		responseBody(dos, body);
     }
-    
-    private void showHelloWorld(DataOutputStream dos) throws IOException {
 
-    	byte[] body = "Hello World".getBytes();
-    	response200Header(dos, body.length);
-    	responseBody(dos, body);
-    }
-    
     
 
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
