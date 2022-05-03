@@ -14,12 +14,46 @@ public class HttpRequestUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(HttpRequestUtils.class);
 
-	public static String getUrl(String firstLine) {
-		String[] splited = firstLine.split(" ");
-		String path = splited[1];
-		log.debug("request.path : {}", path);
-		return path;
+	public static String getRequestPath(String firstLine) {
+		
+		String url = getUrl(firstLine);
+		
+		String requestPath = url;
+		
+		if(url.contains("?")) {
+			int index = splitRequest(url, "?");
+			requestPath = url.substring(0, index);
+			log.debug("request.path : {}", requestPath);	
+		}
+		
+		return requestPath;
 	}
+	
+	public static String getParam(String firstLine) {
+	
+		String url = getUrl(firstLine);
+		
+		int index = splitRequest(url, "?");
+		String params = url.substring(index + 1);
+		
+		log.debug("request.params : {}", params);
+		return params;
+	}
+	
+	public static String getUrl(String firstLine) {
+
+		String[] splited = firstLine.split(" ");
+		String url = splited[1];
+		return url;
+	}
+
+	public static int splitRequest(String url, String delimiter) {
+		return url.indexOf(delimiter);
+	}
+	
+	
+	
+	
     /**
      * @param queryString은
      *            URL에서 ? 이후에 전달되는 field1=value1&field2=value2 형식임
