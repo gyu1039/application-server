@@ -14,6 +14,13 @@ public class HttpRequestUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(HttpRequestUtils.class);
 
+	public static String getUrl(String firstLine) {
+
+		String[] splited = firstLine.split(" ");
+		String url = splited[1];
+		return url;
+	}
+	
 	public static String getRequestPath(String firstLine) {
 		
 		String url = getUrl(firstLine);
@@ -40,12 +47,7 @@ public class HttpRequestUtils {
 		return params;
 	}
 	
-	public static String getUrl(String firstLine) {
-
-		String[] splited = firstLine.split(" ");
-		String url = splited[1];
-		return url;
-	}
+	
 
 	public static int splitRequest(String url, String delimiter) {
 		return url.indexOf(delimiter);
