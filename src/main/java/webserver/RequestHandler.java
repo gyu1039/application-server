@@ -75,6 +75,8 @@ public class RequestHandler extends Thread {
         		
         		log.debug("User : {} ", user1);
         		url = "/index.html";
+        		redirectPage(url, dos);
+        		return;
         	}
         	
     		viewPage(url, dos);
@@ -91,17 +93,34 @@ public class RequestHandler extends Thread {
     	byte[] body;
     	if(url.equals("/")) body = Files.readAllBytes(new File("./webapp/index.html").toPath());  
     	else body = Files.readAllBytes(new File("./webapp" + url).toPath());
-		response200Header(dos, body.length);
-		responseBody(dos, body);
+    	response200Header(dos, body.length);
+    	responseBody(dos, body);
     }
 
-    
+    private void redirectPage(String url, DataOutputStream dos) throws IOException {
+
+    	byte[] body;
+    	body = Files.readAllBytes(new File("./webapp" + url).toPath());
+    	response302Header(dos);
+    	responseBody(dos, body);
+    }
 
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
-        try {
-            dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=	utf-8\r\n");
+    	try {
+    		dos.writeBytes("HTTP/1.1 200 OK \r\n");
+    		dos.writeBytes("Content-Type: text/html;charset=	utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+    
+    private void response302Header(DataOutputStream dos) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: http://localhost:8080/index.html\r\n");
+            dos.writeBytes("Content-Type: text/html;charset=	utf-8\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
