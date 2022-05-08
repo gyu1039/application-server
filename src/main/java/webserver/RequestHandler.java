@@ -15,6 +15,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import db.DataBase;
 import model.User;
 import util.HttpRequestUtils;
 import util.IOUtils;
@@ -51,18 +52,9 @@ public class RequestHandler extends Thread {
         	}
         	
         	String url = HttpRequestUtils.getUrl(line);
-        	Map<String, String> headers = new HashMap<String, String>();
+        	String method = HttpRequestUtils.getHTTPMethod(line);
+        	Map<String, String> headers = getHeaders(br, line);
         	
-        	while(!"".equals(line)) {
-        		log.debug("header : {}", line);
-
-        		line = br.readLine();
-        		String[] headerTokens = line.split(": ");
-        		if(headerTokens.length == 2) {
-        			headers.put(headerTokens[0], headerTokens[1]);        			
-        		}
-        	}
-  
         		
         	if(url.contains("/user/create")) {
         		String requestBody = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
@@ -72,10 +64,35 @@ public class RequestHandler extends Thread {
         				data.get("password"), 
         				data.get("name"),
         				data.get("email"));
-        		
+        		DataBase.addUser(user1);
         		log.debug("User : {} ", user1);
-        		url = "/index.html";
-        		redirectPage(url, dos);
+        		response302Header(dos);
+        		return;
+        	}
+        	
+        	if(method.equals("POST") && url.contains("/user/login")) {
+        		String requestBody = IOUtils.readData(br, Integer.parseInt(headers.get("Content-Length")));
+        		log.debug("Request Body : {}", requestBody);
+        		Map<String, String> param = HttpRequestUtils.parseQueryString(requestBody);
+        		User login = new User(param.get("userId"), 
+        				param.get("password"), 
+        				param.get("name"),
+        				param.get("email"));
+        		log.debug("user : {}, password: {} ", param.get("userId"), param.get("password"));
+        		
+        		User checkingUser = DataBase.findUserById(param.get("userId"));
+        		
+        		if(checkingUser == null) {
+        			response302HeaderWithCookie(dos, "logined=false", "/user/login_failed.html");
+        			log.debug("User Not Found!");
+        		} else if(login.getPassword().equals(checkingUser.getPassword())) {
+        			response302HeaderWithCookie(dos, "logined=true", "/index.html");
+        			log.debug("login success!!");
+        		} else {
+        			response302HeaderWithCookie(dos, "logined=false", "/user/login_failed.html");
+        			log.debug("Password Mismatch!");
+        		}
+        		
         		return;
         	}
         	
@@ -96,14 +113,23 @@ public class RequestHandler extends Thread {
     	response200Header(dos, body.length);
     	responseBody(dos, body);
     }
+    
+    private Map<String, String> getHeaders(BufferedReader br,String line) throws IOException {
+    	Map<String, String> headers = new HashMap<String, String>();
+    	
+    	while(!"".equals(line)) {
+    		log.debug("header : {}", line);
 
-    private void redirectPage(String url, DataOutputStream dos) throws IOException {
-
-    	byte[] body;
-    	body = Files.readAllBytes(new File("./webapp" + url).toPath());
-    	response302Header(dos);
-    	responseBody(dos, body);
+    		line = br.readLine();
+    		String[] headerTokens = line.split(": ");
+    		if(headerTokens.length == 2) {
+    			headers.put(headerTokens[0], headerTokens[1]);        			
+    		}
+    	}
+    	
+    	return headers;
     }
+
 
     private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
     	try {
@@ -116,11 +142,23 @@ public class RequestHandler extends Thread {
         }
     }
     
+ 
     private void response302Header(DataOutputStream dos) {
         try {
             dos.writeBytes("HTTP/1.1 302 Found \r\n");
             dos.writeBytes("Location: http://localhost:8080/index.html\r\n");
             dos.writeBytes("Content-Type: text/html;charset=	utf-8\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+    
+    private void response302HeaderWithCookie(DataOutputStream dos, String cookie, String url) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: http://localhost:8080" + url + "\r\n");
+            dos.writeBytes("Set-Cookie: " + cookie + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());

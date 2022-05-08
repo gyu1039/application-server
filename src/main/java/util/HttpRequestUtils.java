@@ -21,6 +21,13 @@ public class HttpRequestUtils {
 		return url;
 	}
 	
+	public static String getHTTPMethod(String firstLine) {
+
+		String[] splited = firstLine.split(" ");
+		String method = splited[0];
+		return method;
+	}
+	
 	public static String getRequestPath(String firstLine) {
 		
 		String url = getUrl(firstLine);
