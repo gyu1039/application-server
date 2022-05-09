@@ -1,6 +1,9 @@
 package util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -52,6 +55,22 @@ public class HttpRequestUtils {
 		
 		log.debug("request.params : {}", params);
 		return params;
+	}
+	
+	public static Map<String, String> getHeaders(BufferedReader br, String line) throws IOException {
+		Map<String, String> headers = new HashMap<String, String>();
+
+		while(!"".equals(line)) {
+			log.debug("header : {}", line);
+
+			line = br.readLine();
+			String[] headerTokens = line.split(": ");
+			if(headerTokens.length == 2) {
+				headers.put(headerTokens[0], headerTokens[1]);        			
+			}
+		}
+
+    	return headers;
 	}
 	
 	
