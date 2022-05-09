@@ -96,6 +96,27 @@ public class RequestHandler extends Thread {
         		return;
         	}
         	
+        	
+//        	String cookies;
+//        	Map<String, String> getCookie = null;
+//        	
+//        	if(headers.get("cookie") != null) {
+//        		cookies = headers.get("cookie");
+//            	getCookie = HttpRequestUtils.parseCookies(cookies);
+//        	}
+//        	
+//        	
+//        	if(getCookie.get("logined").equals("true") && url.contains("/user/list")) {
+//        		url = "/user/list.html";
+//        		
+//        	} else if(url.contains("/user/list") && getCookie.get("logined").equals("false")) {
+//        		
+//        	}
+//        	
+        	if(url.endsWith(".css")) {
+        		css(url, dos);
+        		return;
+        	}
     		viewPage(url, dos);
         	
         } catch (IOException e) {
@@ -111,6 +132,20 @@ public class RequestHandler extends Thread {
     	if(url.equals("/")) body = Files.readAllBytes(new File("./webapp/index.html").toPath());  
     	else body = Files.readAllBytes(new File("./webapp" + url).toPath());
     	response200Header(dos, body.length);
+    	responseBody(dos, body);
+    }
+    
+    private void css(String url, DataOutputStream dos) throws IOException {
+
+    	byte[] body;
+    	dos.writeBytes("HTTP/1.1 200 OK \r\n");
+		dos.writeBytes("Content-Type: text/css;charset=	utf-8\r\n");
+		
+    	if(url.equals("/")) body = Files.readAllBytes(new File("./webapp/index.html").toPath());  
+    	else body = Files.readAllBytes(new File("./webapp" + url).toPath());
+    	
+    	dos.writeBytes("Content-Length: " + body.length + "\r\n");
+        dos.writeBytes("\r\n");
     	responseBody(dos, body);
     }
     
@@ -173,51 +208,10 @@ public class RequestHandler extends Thread {
             log.error(e.getMessage());
         }
     }
-    
-    // 직접 구현해본 요구사항 1
-//  private void printRequestHeader(BufferedReader br){
-//  	
-//  	String line;
-//  	try {
-//			while((line = br.readLine()) != null) {
-//				if(line.equals("") || line == null) break;
-//				log.debug("Request Header = {}", line);
-//				
-//			}
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//  	
-//  	return;
-//  }
-  
-//  // 직접 구현해본 요구사항 2
-//	
-//  private boolean isRequestURL(BufferedReader br){
-//
-//  	String firstLine;
-//		try {
-//			firstLine = (br.readLine().split(" "))[1];
-//			if(firstLine.equals("/index.html")) return true;
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//  	return false;
-//
-//  }
-    
-//  // 요구 사항 1
-//  private void Requirement_1(BufferedReader br) throws IOException {
-//  	
-//  	String line = br.readLine();
-//  	if(line == null) return;
-//  	
-//  	while(!"".equals(line)) {
-//  		log.debug("header : {} ", line);
-//  		line = br.readLine();
-//  	}
-//  	
-//  }
+ 
+//    private boolean isLogin(String line) {
+//    	String[] headerTokens = line.split(":");
+//    	Map<String, String> cookies = HttpRequestUtils.parseCookies(headerTokens[1].trim());
+//    	String value = cookies.get("logined");
+//    }
 }
