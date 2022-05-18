@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.security.DigestOutputStream;
 import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,10 @@ public class RequestHandler extends Thread {
 			HttpRequest request = new HttpRequest(in);
 			HttpResponse response = new HttpResponse(out);
 
+			if(request.getCookies().getCookie("JSESSIONID") == null) {
+				response.addHeader("Set-Cookie", "JESSIONID=" + UUID.randomUUID());
+			}
+			
 			Controller controller 
 				= RequestMapping.getController(request.getPath());
 			
@@ -55,6 +60,7 @@ public class RequestHandler extends Thread {
 
 		}
 	}
+
 
 	private String getDefaultPath(String path) {
 		if(path.equals("/")) {
