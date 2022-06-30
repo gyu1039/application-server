@@ -1,26 +1,13 @@
 package webserver;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.security.DigestOutputStream;
-import java.util.Collection;
-import java.util.Map;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import db.DataBase;
-import model.User;
-import util.HttpRequestUtils;
-import util.IOUtils;
 
 public class RequestHandler extends Thread {
 	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -42,7 +29,7 @@ public class RequestHandler extends Thread {
 			HttpResponse response = new HttpResponse(out);
 
 			if(request.getCookies().getCookie("JSESSIONID") == null) {
-				response.addHeader("Set-Cookie", "JESSIONID=" + UUID.randomUUID());
+				response.addHeader("Set-Cookie", "JSESSIONID=" + UUID.randomUUID());
 			}
 			
 			Controller controller 
